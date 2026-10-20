@@ -62,17 +62,19 @@ public class OracleRepository
     }
 
     public async Task InsertPaymentAsync(long invoiceId, long orderId, decimal amount, long currencyId,
-        DateTime receivedDate, string transactionId, bool isPaidByCC)
+        DateTime receivedDate, string transactionId, bool isPaidByCC, long sourceId)
     {
+        // SOURCE_ID: where the payment came from (PaymentSourceIds) - BackOffice shows it instead of the
+        // cheque / credit / credit card flags.
         const string sql = """
             INSERT INTO ORDER_TRACKING.OT_PAYMENT
                 (INVOICE_ID, ORDER_ID, PAYMENT_AMOUNT, PAYMENT_CURRENCY_ID,
                  PAYMENT_RECEIVED_DATE, BATCH_NR, IS_PREPAID_BY_CC,
-                 IS_CHECQUE_RECEIVED, IS_CREDIT, CREATED, MODIFIED)
+                 IS_CHECQUE_RECEIVED, IS_CREDIT, SOURCE_ID, CREATED, MODIFIED)
             VALUES
                 (:invoiceId, :orderId, :amount, :currencyId,
                  :receivedDate, :transactionId, :isPaidByCC,
-                 0, 0, SYSDATE, SYSDATE)
+                 0, 0, :sourceId, SYSDATE, SYSDATE)
             """;
 
         using var conn = OpenConnection();
@@ -84,7 +86,8 @@ public class OracleRepository
             currencyId,
             receivedDate,
             transactionId,
-            isPaidByCC = isPaidByCC ? -1 : 0
+            isPaidByCC = isPaidByCC ? -1 : 0,
+            sourceId
         });
     }
 

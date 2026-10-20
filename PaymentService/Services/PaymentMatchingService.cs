@@ -155,7 +155,7 @@ public class PaymentMatchingService
                 var inv = result.Invoice!;
                 await _repo.InsertPaymentAsync(
                     inv.InvoiceId, inv.OrderId, tx.Amount, inv.CurrencyId,
-                    tx.TransactionDate, tx.TransactionId, tx.Source == PaymentSource.Stripe);
+                    tx.TransactionDate, tx.TransactionId, tx.Source == PaymentSource.Stripe, PaymentSourceIds.For(tx));
                 await _repo.UpdateInvoiceBalanceAsync(inv.InvoiceId);
                 // A payment now exists for this transaction, so any stale review row from an earlier
                 // failed attempt (NoMatch/AmountMismatch/etc.) no longer applies — clear it before
