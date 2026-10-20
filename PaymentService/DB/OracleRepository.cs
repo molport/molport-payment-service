@@ -91,6 +91,8 @@ public class OracleRepository
         });
     }
 
+    // Paid = the invoice's payments in its own currency (a payment with no currency counts) - as BackOffice
+    // (OTPayment.CountsTowardsPaid); balance due = total - paid, negative when overpaid.
     public async Task UpdateInvoiceBalanceAsync(long invoiceId)
     {
         const string sql = """
@@ -99,6 +101,7 @@ public class OracleRepository
                     SELECT NVL(SUM(p.PAYMENT_AMOUNT), 0)
                     FROM ORDER_TRACKING.OT_PAYMENT p
                     WHERE p.INVOICE_ID = :invoiceId
+                      AND (p.PAYMENT_CURRENCY_ID IS NULL OR i.CURRENCY_ID IS NULL OR p.PAYMENT_CURRENCY_ID = i.CURRENCY_ID)
                 ),
                 i.BALANCE_DUE =
                     NVL(i.PRICE, 0) - NVL(i.PRICE_DISCOUNT, 0)
@@ -110,6 +113,7 @@ public class OracleRepository
                         SELECT NVL(SUM(p.PAYMENT_AMOUNT), 0)
                         FROM ORDER_TRACKING.OT_PAYMENT p
                         WHERE p.INVOICE_ID = :invoiceId
+                          AND (p.PAYMENT_CURRENCY_ID IS NULL OR i.CURRENCY_ID IS NULL OR p.PAYMENT_CURRENCY_ID = i.CURRENCY_ID)
                     ),
                 i.MODIFIED = SYSDATE
             WHERE i.ID = :invoiceId
